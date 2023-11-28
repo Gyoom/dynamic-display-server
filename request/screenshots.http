@@ -1,0 +1,10 @@
+@hostname = localhost
+@port = 4000
+@personId = 1
+@path = slides/id
+@host = http://{{hostname}}:{{port}}
+
+###
+
+GET {{host}}/screenshots HTTP/1.1
+Accept: application/json
