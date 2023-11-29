@@ -12,6 +12,11 @@ app.use(middlewares.logger)
 app.use(middlewares.cors)
 app.use(middlewares.errorHandler)
 
+// app.use(express.urlencoded({
+//   extended: true
+// }))
+// app.use(express.static('public'))
+
 
 app.use('/config', configRouter)
 app.use('/screenshots', screenshotsRouter)

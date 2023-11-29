@@ -1,1 +1,47 @@
-{"slides":[{"id":0,"name":"vvvd","group":"","picture":"","domainId":-1,"domainOrder":-1},{"id":1,"name":"vvvd","group":"","picture":"","domainId":-1,"domainOrder":-1}]}
+{
+    "slides": [
+        {
+            "id": 0,
+            "name": "Plancher d'essai",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 1
+        },
+        {
+            "id": 1,
+            "name": "Ligne 4",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 2
+        },
+        {
+            "id": 2,
+            "name": "Ligne 3",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 3
+        },
+        {
+            "id": 3,
+            "name": "Ligne 2",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 4
+        },
+        {
+            "id": 4,
+            "name": "Ligne Jade",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 5
+        },
+        {
+            "id": 5,
+            "name": "Pointage en direct",
+            "group": "My Report Center - Alpha Innovation - atelier",
+            "domainId": 1,
+            "domainOrder": 6
+        }
+     
+    ]
+  }

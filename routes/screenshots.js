@@ -42,14 +42,14 @@ const MyReportScreenshots = async (screenshots, slides) => {
                     waitUntil: "networkidle0",
                 }
             )
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(3000);
             await page.setViewport({
                 width: 1920,
                 height: 1080,
                 deviceScaleFactor: 1
               });
             const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
-            screenshots[slides[index].id] = screenshotBuffer
+            screenshots[slides[index].id] = "data:image/png;base64, " + screenshotBuffer
         }
     }
 
@@ -83,7 +83,7 @@ router.get('/', async (req, res) => {
         }
         else if (slides[index].picture !== "")
         {
-            screenshots[slide.id] = slides[index].picture
+            screenshots[index] = slides[index].picture
         }
     }
     
