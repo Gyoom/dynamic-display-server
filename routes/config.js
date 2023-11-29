@@ -7,23 +7,32 @@ var db = new JsonDB(new Config("db.json", true, false, '/'));
 // Find all
 router.get("/", async (req, res, next) => {
   var data = await db.getData("/");
+
+  data = data.slides
+
   res.json(data)
 })
 
 // Find by ID
 router.get("/:path", async (req, res, next) => {
   var data = await db.getData("/" + req.params.path);
+
   res.json(data)
 })
 
 // Delete one
-router.delete("/:id", (req, res, next) => {
+router.delete("/:path", (req, res, next) => {
   
 });
 
 // Insert one
-router.post("/", (req, res, next) => {
-  
+router.post("/", async (req, res, next) => {
+  const body = req.body
+
+  await db.push("/slides", body);
+
+  var data = await db.getData("/slides");
+  res.json(data)
 })
 
 // Update one
