@@ -8,6 +8,7 @@ const screenshotsRouter = require('./routes/screenshots')
 const app = express()
 
 app.use(middlewares.cors)
+//app.use(express.json())
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 

@@ -18,7 +18,7 @@ const MyReportScreenshots = async (screenshots, slides) => {
         for (let index = 0; index < slides.length; index++) {
             if (slides[index].domainId === 1)
             {
-                screenshots[slides[index].id] = '404'
+                screenshots[slides[index].order] = '404'
             }
         }
         browser.close();
@@ -45,7 +45,7 @@ const MyReportScreenshots = async (screenshots, slides) => {
         for (let index = 0; index < slides.length; index++) {
             if (slides[index].domainId === 1)
             {
-                screenshots[slides[index].id] = '404'
+                screenshots[slides[index].order] = '404'
             }
         }
         await browser.close();
@@ -68,7 +68,7 @@ const MyReportScreenshots = async (screenshots, slides) => {
                 deviceScaleFactor: 1
               });
             const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
-            screenshots[slides[index].id] = "data:image/png;base64, " + screenshotBuffer
+            screenshots[slides[index].order] = "data:image/png;base64, " + screenshotBuffer
         }
     }
 
@@ -98,6 +98,7 @@ router.get('/', async (req, res) => {
             } 
         } 
     }
+    console.log(slides)
     var screenshots = []
     var usedDomain = []
     // fill slides
@@ -117,7 +118,6 @@ router.get('/', async (req, res) => {
             screenshots[index] = slides[index].picture
         }
     }
-    
     res.json(screenshots)
 })
 
