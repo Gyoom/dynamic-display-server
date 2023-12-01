@@ -6,7 +6,6 @@ const puppeteer = require('puppeteer')
 var db = new JsonDB(new Config("db.json", true, false, '/'));
 
 const MyReportScreenshots = async (screenshots, slides) => {
-
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     // connect to alphaInnovationPage
@@ -15,7 +14,16 @@ const MyReportScreenshots = async (screenshots, slides) => {
         {
             waitUntil: "networkidle0",
         }
-    );
+    ).catch(err => {
+        for (let index = 0; index < slides.length; index++) {
+            if (slides[index].domainId === 1)
+            {
+                screenshots[slides[index].id] = '404'
+            }
+        }
+        browser.close();
+        return
+    })
     const url = await page.url();
     // redirect to login
     if (url.startsWith('http://srvfactorytrack.wavnet.be:8080/auth/Account/Login'))
@@ -31,6 +39,17 @@ const MyReportScreenshots = async (screenshots, slides) => {
                 waitUntil: "networkidle0",
             }
         );
+    } 
+    else if (!url.startsWith('http://srvfactorytrack.wavnet.be:8080/'))
+    {
+        for (let index = 0; index < slides.length; index++) {
+            if (slides[index].domainId === 1)
+            {
+                screenshots[slides[index].id] = '404'
+            }
+        }
+        await browser.close();
+        return
     }
     // get tabs screenshots
     for (let index = 0; index < slides.length; index++) {
@@ -67,12 +86,23 @@ const screenshotWebsite = async (screenshots, slides, slide) => {
 }
 
 router.get('/', async (req, res) => {
-    var slides = await db.getData("/slides");
+    var rawSlides = await db.getData("/slides");
+    
+    // slide order correction 
+    var slides = []
+    for (let i = 0; i < rawSlides.length; i++) {
+        for (let y = 0; y < rawSlides.length; y++) {
+            if (rawSlides[y].order === i)
+            {
+                slides[i] = rawSlides[y]
+            } 
+        } 
+    }
     var screenshots = []
     var usedDomain = []
-
-
+    // fill slides
     for (let index = 0; index < slides.length; index++) {
+        // screenshot Slides
         if (slides[index].domainId !== -1)
         {
             if (!usedDomain.find(d => d === slides[index].domainId))
@@ -81,6 +111,7 @@ router.get('/', async (req, res) => {
                 await screenshotWebsite(screenshots, slides, slides[index])
             }
         }
+        // uploded Slides
         else if (slides[index].picture !== "")
         {
             screenshots[index] = slides[index].picture

@@ -1,22 +1,18 @@
 const express = require("express")
 
+var bodyParser = require("body-parser");
 const middlewares = require('./utils/middlewares')
-
 const configRouter = require('./routes/config')
 const screenshotsRouter = require('./routes/screenshots')
 
 const app = express()
 
-app.use(express.json())
-app.use(middlewares.logger)
 app.use(middlewares.cors)
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(middlewares.logger)
 app.use(middlewares.errorHandler)
-
-// app.use(express.urlencoded({
-//   extended: true
-// }))
-// app.use(express.static('public'))
-
 
 app.use('/config', configRouter)
 app.use('/screenshots', screenshotsRouter)
