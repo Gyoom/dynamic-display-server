@@ -77,14 +77,14 @@ const MyReportScreenshots = async (screenshots, slides) => {
 
 const screenshotWebsite = async (screenshots, slides, slide) => {
     switch (slide.domainId) {
-        case 1:
+        case "AIMyReport":
             await MyReportScreenshots(screenshots, slides)
             break;
         default:
             break;
     }
 }
-
+// get all
 router.get('/', async (req, res) => {
     var rawSlides = await db.getData("/slides");
     
@@ -98,7 +98,6 @@ router.get('/', async (req, res) => {
             } 
         } 
     }
-    console.log(slides)
     var screenshots = []
     var usedDomain = []
     // fill slides

@@ -4,7 +4,7 @@ const NotFoundError = require('./NotFoundError')
 
 morgan.token('body', req => JSON.stringify(req.body))
 
-const Logger = morgan('[:date[clf]] [:referrer] :method :url :status :res[content-length] :response-time ms :body')
+const Logger = morgan('[:date[clf]] [:referrer] :method :url :status :res[content-length] :response-time ms')
 
 const Cors = cors()
 
