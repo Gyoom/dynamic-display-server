@@ -1,12 +1,13 @@
+require('dotenv').config()
 const router = require('express').Router()
-const { JsonDB, Config }  = require('node-json-db');
-const NotFoundError = require('../utils/NotFoundError')
 const puppeteer = require('puppeteer')
+const Slide = require("../models/slide")
 
-var db = new JsonDB(new Config("db.json", true, false, '/'));
+const AI_LOGIN = process.env.AI_LOGIN
+const AI_PASSWORD = process.env.AI_PASSWORD
 
-const MyReportScreenshots = async (screenshots, slides) => {
-    const browser = await puppeteer.launch({ headless: true });
+const MyReportScreenshots = async (pictures, slides) => {
+    const browser = await puppeteer.launch()
     const page = await browser.newPage();
     // connect to alphaInnovationPage
     await page.goto(
@@ -18,7 +19,7 @@ const MyReportScreenshots = async (screenshots, slides) => {
         for (let index = 0; index < slides.length; index++) {
             if (slides[index].domainId === 1)
             {
-                screenshots[slides[index].order] = '404'
+                pictures[slides[index].order] = '404'
             }
         }
         browser.close();
@@ -28,9 +29,9 @@ const MyReportScreenshots = async (screenshots, slides) => {
     // redirect to login
     if (url.startsWith('http://srvfactorytrack.wavnet.be:8080/auth/Account/Login'))
     {
-        await page.type('#Username', 'stagiaire')
+        await page.type('#Username', AI_LOGIN)
         await page.click('body > div > div > div > form > fieldset > button')
-        await page.type('#Password', 'Alpha2023$')
+        await page.type('#Password', AI_PASSWORD)
         await page.click('body > div > div > div > form > fieldset > button')
 
         await page.goto(
@@ -43,9 +44,9 @@ const MyReportScreenshots = async (screenshots, slides) => {
     else if (!url.startsWith('http://srvfactorytrack.wavnet.be:8080/'))
     {
         for (let index = 0; index < slides.length; index++) {
-            if (slides[index].domainId === 1)
+            if (slides[index].domainId === "AIMyReport")
             {
-                screenshots[slides[index].order] = '404'
+                pictures[slides[index].order] = '404'
             }
         }
         await browser.close();
@@ -53,7 +54,7 @@ const MyReportScreenshots = async (screenshots, slides) => {
     }
     // get tabs screenshots
     for (let index = 0; index < slides.length; index++) {
-        if (slides[index].domainId === 1)
+        if (slides[index].domainId === "AIMyReport")
         {
             await page.click(
                 'body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul > li:nth-child(' + slides[index].domainOrder + ') > div',
@@ -64,21 +65,21 @@ const MyReportScreenshots = async (screenshots, slides) => {
             await page.waitForTimeout(3000);
             await page.setViewport({
                 width: 1920,
-                height: 1080,
+                height: 810,
                 deviceScaleFactor: 1
               });
             const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
-            screenshots[slides[index].order] = "data:image/png;base64, " + screenshotBuffer
+            pictures[slides[index].order] = "data:image/png;base64, " + screenshotBuffer
         }
     }
 
     await browser.close();
 }
 
-const screenshotWebsite = async (screenshots, slides, slide) => {
-    switch (slide.domainId) {
+const screenshotWebsite = async (pictures, slides, currentSlide) => {
+    switch (currentSlide.domainId) {
         case "AIMyReport":
-            await MyReportScreenshots(screenshots, slides)
+            await MyReportScreenshots(pictures, slides)
             break;
         default:
             break;
@@ -86,7 +87,12 @@ const screenshotWebsite = async (screenshots, slides, slide) => {
 }
 // get all
 router.get('/', async (req, res) => {
-    var rawSlides = await db.getData("/slides");
+    // get databases data
+    var rawSlides = []
+    await Slide
+        .find({})
+        .then(slides => rawSlides = slides)
+        .catch(err => next(err))
     
     // slide order correction 
     var slides = []
@@ -98,26 +104,26 @@ router.get('/', async (req, res) => {
             } 
         } 
     }
-    var screenshots = []
+    var pictures = []
     var usedDomain = []
     // fill slides
     for (let index = 0; index < slides.length; index++) {
         // screenshot Slides
-        if (slides[index].domainId !== -1)
+        if (slides[index].domainId !== "")
         {
             if (!usedDomain.find(d => d === slides[index].domainId))
             {
                 usedDomain.push(slides[index].domainId)
-                await screenshotWebsite(screenshots, slides, slides[index])
+                await screenshotWebsite(pictures, slides, slides[index])
             }
         }
         // uploded Slides
         else if (slides[index].picture !== "")
         {
-            screenshots[index] = slides[index].picture
+            pictures[index] = slides[index].picture
         }
     }
-    res.json(screenshots)
+    res.json(pictures)
 })
 
 module.exports = router

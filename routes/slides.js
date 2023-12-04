@@ -1,18 +1,16 @@
 const router = require('express').Router()
-const { JsonDB, Config }  = require('node-json-db');
-const NotFoundError = require('../utils/NotFoundError')
-const fse = require('fs-extra')
-const fs = require('fs')
-const path = require('path');
-const multer = require('multer');
-const upload = multer ( {  dest : 'uploads/'  } )
+const Slide = require("../models/slide")
 
-var db = new JsonDB(new Config("db.json", true, true, '/'));
 
 // Find all
 router.get("/", async (req, res, next) => {
-  var rawSlides = await db.getData("/slides");
+  // get data from database
+  var rawSlides = []
+  await Slide.find({})
+  .then(slides => rawSlides = slides)
+  .catch(err => next(err))
 
+  // order correction
   var correctOrderSlides = []
   for (let i = 0; i < rawSlides.length; i++) {
       for (let y = 0; y < rawSlides.length; y++) {
@@ -27,71 +25,60 @@ router.get("/", async (req, res, next) => {
 })
 
 // Insert One
-router.post("/", upload.single('file'), async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   const newSlide = req.body
 
-  await db.push("/slides[]", {
-    id: newSlide.id,
-    order: newSlide.order,
-    name: newSlide.name,
-    picture: newSlide.picture,
-    domainId: newSlide.domainId,
-    domainOrder: newSlide.domainOrder
-  }, true);
+  await Slide
+    .create({
+      id: newSlide.id,
+      order: newSlide.order,
+      name: newSlide.name,
+      domainId: newSlide.domainId,
+      domainOrder: newSlide.domainOrder,
+      picture: newSlide.picture
+    })
+    .catch(err => next(err))
 
   res.status(200).json(newSlide)
-
-  /*
-  fs.readFile(req.file.path, (err, data)=>{
-    // error handle
-    if(err) {
-        throw err;
-    }
-    // convert image file to base64-encoded string
-    const base64Image = Buffer.from(data, 'binary').toString('base64');
-    
-    // combine all strings
-    const base64ImageStr = `data:${req.file.mimetype};base64,${base64Image}`;
-    // function dataURLtoFile(dataurl, filename) {
-    //   var arr = dataurl.split(','),
-    //       mime = arr[0].match(/:(.*?);/)[1],
-    //       bstr = atob(arr[arr.length - 1]), 
-    //       n = bstr.length, 
-    //       u8arr = new Uint8Array(n);
-    //   while(n--){
-    //       u8arr[n] = bstr.charCodeAt(n);
-    //   }
-    //   return new File([u8arr], filename, {type:mime});
-    //}
-  
-    // //Usage example:
-    // var file = dataURLtoFile(base64ImageStr,'hello.png');
-    // console.log(file);
-  })
-  */
 })
 
 // change Order
 router.put("/order", async (req, res, next) => {
   const newOrder = req.body
 
-  var count = await db.count("/slides")
+  var count = 0
+  await Slide
+    .countDocuments()
+    .then(countDocuments => count = countDocuments)
+    .catch(err => next(err))
+
+    console.log(newOrder)
   for (let index = 0; index < count; index++) {
-    var currentSlide = await db.getData("/slides[" + index + "]")
-    await db.push( "/slides["+ index +"]/order" ,  newOrder.find(e => e.id === currentSlide.id).order ,  true );
+    await Slide
+      .updateMany({ id: newOrder[index].id }, { order: newOrder[index].order})
+      .catch(err => next(err))
   }
 
   res.status(200).json()
 })
 
-router.delete("/:id", async (req, res, next) => {
-  var id = req.params.id
+router.delete("/:order", async (req, res, next) => {
+  var deletedOrder = req.params.order
 
-  await db.delete("/slides[" + await db.getIndex("/slides", id) + "]");
+  await Slide.deleteOne({ order:deletedOrder })
 
-  var count = await db.count("/slides")
-  for (let index = 0; index < count; index++) {
-    await db.push( "/slides["+ index +"]/order" ,  index ,  true );
+  var count = 0
+  await Slide
+    .countDocuments()
+    .then(countDocuments => count = countDocuments)
+    .catch(err => next(err))
+  
+
+  var initialIndex = +deletedOrder + 1
+  for (let index = initialIndex; index <= count; index++) {
+    await Slide
+      .updateOne({ order: index }, { order: index - 1 })
+      .catch(err => next(err))
   }
 
   res.status(200).json()
