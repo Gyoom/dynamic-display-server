@@ -15,6 +15,8 @@ mongoose.connect(MONGODB_URI)
 
 const app = express()
 
+
+app.use(middlewares.cors)
 const rootRouter = express.Router()
 app.use(express.static(buildPath))
 app.use(bodyParser.json({ limit: '10mb' }))
