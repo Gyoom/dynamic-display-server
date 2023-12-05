@@ -14,7 +14,7 @@ const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => 
         const page = await browser.newPage()
 
         await page.setViewport({
-            width: 1700,
+            width: 1920,
             height: 1080,
             deviceScaleFactor: 1
         })
@@ -23,11 +23,11 @@ const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => 
         {
             waitUntil: "networkidle0",
         })
+        await page.waitForNetworkIdle()
         // check login page
         const url = await page.url()
         if (url.startsWith('http://130.145.57.41:3000/proxyGrafana/login'))
         {
-            console.log('login')
             // login
             await page.type('input[name=user]', GRAFANA_LOGIN);
 
@@ -45,18 +45,12 @@ const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => 
             await browser.close()
             return
         }
-        // // go to screenshot webpage fddb6573-6198-4278-b065-473a5f507f93/solar-production?orgId=7&from=now-1y&to=now&kiosk
-        // console.log('http://130.145.57.41:3000/proxyGrafana/d/' + currentSlide.webpagePathData)
-        // await page.goto('http://130.145.57.41:3000/proxyGrafana/d/' + currentSlide.webpagePathData,
-        // {
-        //     waitUntil: "networkidle0",
-        // })
-        console.log(1)
-        await new Promise(r => setTimeout(r, 3000))
-        console.log(2)
+  
+        await page.waitForNetworkIdle()
+        await new Promise(r => setTimeout(r, 1000))
 
-        const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true })
-        pictures[currentSlide.order] = "data:image/png;base64, " + screenshotBuffer
+        const screenshotBuffer = await page.screenshot({ encoding: 'base64', type:'jpeg', quality:100 });
+        pictures[currentSlide.order] = "data:image/jpg;base64, " + screenshotBuffer
 
         await browser.close();
 }
@@ -140,9 +134,9 @@ const MyReportScreenshots = async (pictures, slides, screenResolution) => {
                         }
                     )
                     await page.waitForNetworkIdle()
-                    await new Promise(r => setTimeout(r, 3000))
-                    const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
-                    pictures[slides[i].order] = "data:image/png;base64, " + screenshotBuffer
+                    await new Promise(r => setTimeout(r, 1000))
+                    const screenshotBuffer = await page.screenshot({ encoding: 'base64', type:'jpeg', quality:100, fullPage: true });
+                    pictures[slides[i].order] = "data:image/jpg;base64, " + screenshotBuffer
                     break
                 }
                 
