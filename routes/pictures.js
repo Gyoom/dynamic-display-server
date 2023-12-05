@@ -10,7 +10,7 @@ const GRAFANA_LOGIN = process.env.GRAFANA_LOGIN
 const GRAFANA_PASSWORD = process.env.GRAFANA_PASSWORD
 
 const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => {
-        const browser = await puppeteer.launch({ headless: "new" })
+        const browser = await puppeteer.launch({ headless: 'new' })
         const page = await browser.newPage()
 
         await page.setViewport({
@@ -185,7 +185,7 @@ router.post('/', async (req, res) => {
         // screenshot Slides
         if (slides[index].domain !== "")
         {
-            if (!usedDomain.find(d => d === slides[index].domain))
+            if (!usedDomain.find(d => d === slides[index].domain) || slides[index].domain === 'AIGraphana') // Todo
             {
                 usedDomain.push(slides[index].domain)
                 await screenshotWebsite(pictures, slides, slides[index], req.body)
