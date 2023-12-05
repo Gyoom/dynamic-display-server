@@ -55,7 +55,7 @@ const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => 
         await browser.close();
 }
 
-const MyReportScreenshots = async (pictures, slides, screenResolution) => {
+const MyReportScreenshots = async (pictures, slides, screenResolution, res) => {
     const browser = await puppeteer.launch({ headless: "new" })
     const page = await browser.newPage()
 
@@ -138,7 +138,7 @@ const MyReportScreenshots = async (pictures, slides, screenResolution) => {
                         }
                     )
                     await page.waitForNetworkIdle()
-                    await new Promise(r => setTimeout(r, 1000))
+                    //await new Promise(r => setTimeout(r, 1000))
                     const screenshotBuffer = await page.screenshot({ encoding: 'base64', type:'jpeg', quality:100, fullPage: true });
                     pictures[slides[i].order] = "data:image/jpg;base64, " + screenshotBuffer
                     break
@@ -151,10 +151,10 @@ const MyReportScreenshots = async (pictures, slides, screenResolution) => {
     await browser.close();
 }
 
-const screenshotWebsite = async (pictures, slides, currentSlide, screenResolution) => {
+const screenshotWebsite = async (pictures, slides, currentSlide, screenResolution, res) => {
     switch (currentSlide.domain) {
         case 'AIMyReport':
-            await MyReportScreenshots(pictures, slides, screenResolution)
+            await MyReportScreenshots(pictures, slides, screenResolution, res)
             break;
         case "AIGraphana":
             await GraphanaScreenshots(pictures, currentSlide, screenResolution)
@@ -192,7 +192,7 @@ router.post('/', async (req, res) => {
             if (!usedDomain.find(d => d === slides[index].domain) || slides[index].domain === 'AIGraphana') // Todo
             {
                 usedDomain.push(slides[index].domain)
-                await screenshotWebsite(pictures, slides, slides[index], req.body)
+                await screenshotWebsite(pictures, slides, slides[index], req.body, res)
             }
         }
         // uploded Slides
