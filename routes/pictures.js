@@ -113,12 +113,16 @@ const MyReportScreenshots = async (pictures, slides, screenResolution) => {
     // get tabs
     const childrens = await page.evaluate(async () => {
         const names = [];
-        for (element of await document.querySelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul').children) {
+        for (element of (await document.querySelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul')).children) {
             var beginIndex = element.innerHTML.indexOf("class=\"ng-tns-c119-0\">")
             var endIndex =  element.innerHTML.indexOf("</span></div></div></div>")
             names.push(element.innerHTML.substring(beginIndex + 22, endIndex));
         }
         return names;
+    }).catch(e => {
+        console.log('error : ', e)
+        res.status(400).json()
+        return
     })
     // find correponding tag
     for (let i = 0; i < slides.length; i++) {
