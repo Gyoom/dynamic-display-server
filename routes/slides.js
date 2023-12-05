@@ -33,8 +33,8 @@ router.post("/", async (req, res, next) => {
       id: newSlide.id,
       order: newSlide.order,
       name: newSlide.name,
-      domainId: newSlide.domainId,
-      domainOrder: newSlide.domainOrder,
+      domain: newSlide.domain,
+      webpagePathData: newSlide.webpagePathData,
       picture: newSlide.picture
     })
     .catch(err => next(err))

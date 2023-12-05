@@ -5,8 +5,8 @@ const slideSchema = new mongoose.Schema({
   id: String,
   order: Number,
   name: String,
-  domainId: String,
-  domainOrder: Number,
+  domain: String,
+  webpagePathData: String,
   picture:String
 })
 

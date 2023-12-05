@@ -3,12 +3,75 @@ const router = require('express').Router()
 const puppeteer = require('puppeteer')
 const Slide = require("../models/slide")
 
-const AI_LOGIN = process.env.AI_LOGIN
-const AI_PASSWORD = process.env.AI_PASSWORD
+const MYREPORT_LOGIN = process.env.MYREPORT_LOGIN
+const MYREPORT_PASSWORD = process.env.MYREPORT_PASSWORD
 
-const MyReportScreenshots = async (pictures, slides) => {
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage();
+const GRAFANA_LOGIN = process.env.GRAFANA_LOGIN
+const GRAFANA_PASSWORD = process.env.GRAFANA_PASSWORD
+
+const GraphanaScreenshots = async (pictures, currentSlide, screenResolution) => {
+        const browser = await puppeteer.launch({ headless: "new" })
+        const page = await browser.newPage()
+
+        await page.setViewport({
+            width: 1700,
+            height: 1080,
+            deviceScaleFactor: 1
+        })
+
+        await page.goto('http://130.145.57.41:3000/proxyGrafana/d/' + currentSlide.webpagePathData,
+        {
+            waitUntil: "networkidle0",
+        })
+        // check login page
+        const url = await page.url()
+        if (url.startsWith('http://130.145.57.41:3000/proxyGrafana/login'))
+        {
+            console.log('login')
+            // login
+            await page.type('input[name=user]', GRAFANA_LOGIN);
+
+            await page.type('input[name=password]', GRAFANA_PASSWORD)
+
+            await page.click("#pageContent > div > div > div.css-17taakh > div > div > div.css-9h8xxw > div > div > form > button",
+            {
+                waitUntil: "networkidle0",
+            })
+        }
+        // error 404 - dont find webpage 
+        else if (!url.startsWith('http://130.145.57.41:3000/proxyGrafana'))
+        {
+            pictures[slides[index].order] = '404'
+            await browser.close()
+            return
+        }
+        // // go to screenshot webpage fddb6573-6198-4278-b065-473a5f507f93/solar-production?orgId=7&from=now-1y&to=now&kiosk
+        // console.log('http://130.145.57.41:3000/proxyGrafana/d/' + currentSlide.webpagePathData)
+        // await page.goto('http://130.145.57.41:3000/proxyGrafana/d/' + currentSlide.webpagePathData,
+        // {
+        //     waitUntil: "networkidle0",
+        // })
+        console.log(1)
+        await new Promise(r => setTimeout(r, 3000))
+        console.log(2)
+
+        const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true })
+        pictures[currentSlide.order] = "data:image/png;base64, " + screenshotBuffer
+
+        await browser.close();
+}
+
+const MyReportScreenshots = async (pictures, slides, screenResolution) => {
+    const browser = await puppeteer.launch({ headless: "new" })
+    const page = await browser.newPage()
+
+    await page.setViewport({
+        width: screenResolution.width,
+        height: screenResolution.height,
+        deviceScaleFactor: 1
+    })
+    
+
     // connect to alphaInnovationPage
     await page.goto(
         'http://srvfactorytrack.wavnet.be:8080/project/ALPHA%20INNOVATIONS/dashboard/Dashboards_b796601b-c5be-4061-94f6-341012dc9291/view',
@@ -17,7 +80,7 @@ const MyReportScreenshots = async (pictures, slides) => {
         }
     ).catch(err => {
         for (let index = 0; index < slides.length; index++) {
-            if (slides[index].domainId === 1)
+            if (slides[index].domain === 'AIMyReport')
             {
                 pictures[slides[index].order] = '404'
             }
@@ -25,13 +88,13 @@ const MyReportScreenshots = async (pictures, slides) => {
         browser.close();
         return
     })
-    const url = await page.url();
+    const url = await page.url()
     // redirect to login
     if (url.startsWith('http://srvfactorytrack.wavnet.be:8080/auth/Account/Login'))
     {
-        await page.type('#Username', AI_LOGIN)
+        await page.type('#Username', MYREPORT_LOGIN)
         await page.click('body > div > div > div > form > fieldset > button')
-        await page.type('#Password', AI_PASSWORD)
+        await page.type('#Password', MYREPORT_PASSWORD)
         await page.click('body > div > div > div > form > fieldset > button')
 
         await page.goto(
@@ -44,7 +107,7 @@ const MyReportScreenshots = async (pictures, slides) => {
     else if (!url.startsWith('http://srvfactorytrack.wavnet.be:8080/'))
     {
         for (let index = 0; index < slides.length; index++) {
-            if (slides[index].domainId === "AIMyReport")
+            if (slides[index].domain === "AIMyReport")
             {
                 pictures[slides[index].order] = '404'
             }
@@ -52,41 +115,58 @@ const MyReportScreenshots = async (pictures, slides) => {
         await browser.close();
         return
     }
-    // get tabs screenshots
-    for (let index = 0; index < slides.length; index++) {
-        if (slides[index].domainId === "AIMyReport")
-        {
-            await page.click(
-                'body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul > li:nth-child(' + slides[index].domainOrder + ') > div',
+    await new Promise(r => setTimeout(r, 1000))
+    // get tabs
+    const childrens = await page.evaluate(async () => {
+        const names = [];
+        for (element of await document.querySelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul').children) {
+            var beginIndex = element.innerHTML.indexOf("class=\"ng-tns-c119-0\">")
+            var endIndex =  element.innerHTML.indexOf("</span></div></div></div>")
+            names.push(element.innerHTML.substring(beginIndex + 22, endIndex));
+        }
+        return names;
+    })
+    // find correponding tag
+    for (let i = 0; i < slides.length; i++) {
+        if (slides[i].domain === 'AIMyReport') {
+            for (let y = 0; y < childrens.length; y++) {
+                if (childrens[y] === slides[i].webpagePathData)
                 {
-                    waitUntil: "networkidle0",
+                    y = y + 1
+                    await page.click(
+                        'body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul > li:nth-child(' + y + ') > div',
+                        {
+                            waitUntil: "networkidle0",
+                        }
+                    )
+                    await page.waitForNetworkIdle()
+                    await new Promise(r => setTimeout(r, 3000))
+                    const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
+                    pictures[slides[i].order] = "data:image/png;base64, " + screenshotBuffer
+                    break
                 }
-            )
-            await page.waitForTimeout(3000);
-            await page.setViewport({
-                width: 1920,
-                height: 810,
-                deviceScaleFactor: 1
-              });
-            const screenshotBuffer = await page.screenshot({ encoding: 'base64', fullPage: true });
-            pictures[slides[index].order] = "data:image/png;base64, " + screenshotBuffer
+                
+            }
         }
     }
 
     await browser.close();
 }
 
-const screenshotWebsite = async (pictures, slides, currentSlide) => {
-    switch (currentSlide.domainId) {
-        case "AIMyReport":
-            await MyReportScreenshots(pictures, slides)
+const screenshotWebsite = async (pictures, slides, currentSlide, screenResolution) => {
+    switch (currentSlide.domain) {
+        case 'AIMyReport':
+            await MyReportScreenshots(pictures, slides, screenResolution)
+            break;
+        case "AIGraphana":
+            await GraphanaScreenshots(pictures, currentSlide, screenResolution)
             break;
         default:
             break;
     }
 }
 // get all
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
     // get databases data
     var rawSlides = []
     await Slide
@@ -106,15 +186,15 @@ router.get('/', async (req, res) => {
     }
     var pictures = []
     var usedDomain = []
-    // fill slides
+    // fill pictures
     for (let index = 0; index < slides.length; index++) {
         // screenshot Slides
-        if (slides[index].domainId !== "")
+        if (slides[index].domain !== "")
         {
-            if (!usedDomain.find(d => d === slides[index].domainId))
+            if (!usedDomain.find(d => d === slides[index].domain))
             {
-                usedDomain.push(slides[index].domainId)
-                await screenshotWebsite(pictures, slides, slides[index])
+                usedDomain.push(slides[index].domain)
+                await screenshotWebsite(pictures, slides, slides[index], req.body)
             }
         }
         // uploded Slides
