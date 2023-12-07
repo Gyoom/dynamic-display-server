@@ -7,7 +7,7 @@ const slideSchema = new mongoose.Schema({
   name: String,
   domain: String,
   webpagePathData: String,
-  picture:String
+  picture: String
 })
 
 slideSchema.set('toJSON', {

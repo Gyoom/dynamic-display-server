@@ -15,7 +15,9 @@ router.post("/", async (req, res, next) => {
   await ConfigApp.updateOne({ id:0 }, 
     {
       displayDelay: newConfig.displayDelay,
-      reloadDelay: newConfig.reloadDelay
+      reloadDelay: newConfig.reloadDelay,
+      transitionDelay : newConfig.transitionDelay,
+      domains : newConfig.domains
     })
 
   res.status(200).json()

@@ -1,8 +1,9 @@
 const router = require('express').Router()
 const Slide = require("../models/slide")
+const domainSelector = require('./screenshotDomain/domainSelector')
 
 
-// Find all
+// Find all without picture
 router.get("/", async (req, res, next) => {
   // get data from database
   var rawSlides = []
@@ -18,6 +19,46 @@ router.get("/", async (req, res, next) => {
           {
             rawSlides[y].picture = ""
             correctOrderSlides[i] = rawSlides[y]
+          } 
+      } 
+  }
+  res.status(200).json(correctOrderSlides)
+})
+
+// Find all
+router.get("/todisplay", async (req, res, next) => {
+  // get data from database
+  var rawSlides = []
+  await Slide.find({})
+  .then(slides => rawSlides = slides)
+  .catch(err => next(err))
+
+  // order correction
+  var correctOrderSlides = []
+  for (let i = 0; i < rawSlides.length; i++) {
+      for (let y = 0; y < rawSlides.length; y++) {
+          if (rawSlides[y].order === i)
+          {
+              correctOrderSlides[i] = rawSlides[y]
+              if (correctOrderSlides[i].picture === "")
+              {   
+                  var tempImage = ""
+                  try {
+                      tempImage = await domainSelector.select(correctOrderSlides[i], res)
+                  } catch (error) {
+                      res.status(500).json()
+                      return
+                  }
+                  correctOrderSlides[i].picture = tempImage
+                    
+                  await Slide
+                      .updateOne({ id: correctOrderSlides[i].id }, { picture: correctOrderSlides[i].picture})
+                      .catch(err => {
+                        console.log(err)
+                        res.status(500).json()
+                        return
+                  })
+              }
           } 
       } 
   }
@@ -52,7 +93,6 @@ router.put("/order", async (req, res, next) => {
     .then(countDocuments => count = countDocuments)
     .catch(err => next(err))
 
-    console.log(newOrder)
   for (let index = 0; index < count; index++) {
     await Slide
       .updateMany({ id: newOrder[index].id }, { order: newOrder[index].order})

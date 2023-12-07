@@ -3,7 +3,11 @@ const mongoose = require('mongoose')
 // Define Schema
 const configSchema = new mongoose.Schema({
   reloadDelay: Number,
-  displayDelay: Number
+  displayDelay: Number,
+  id: Number,
+  transitionDelay: Number,
+  domains : Array
+
 })
 
 configSchema.set('toJSON', {
