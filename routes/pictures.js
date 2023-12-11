@@ -6,7 +6,7 @@ const domainSelector = require('./screenshotDomain/domainSelector')
 router.get('/:id', async (req, res, next) => {
     var id = req.params.id
     // get databases slide
-    var slide
+    var slide = []
     await Slide
         .find({ id: id })
         .then(dbSlide => slide = dbSlide)
