@@ -58,7 +58,7 @@ const screenshot = async (currentSlide, screenResolution) => {
     const childrens = await page.evaluate(async () => {
         const names = []
         var elements = await document.querySelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul')
-        
+        console.log(elements)
         for (element of elements.children) {
             var beginIndex = element.innerHTML.indexOf("class=\"ng-tns-c119-0\">")
             var endIndex =  element.innerHTML.indexOf("</span></div></div></div>")
