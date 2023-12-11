@@ -6,5 +6,5 @@
 
 ###
 
-GET {{host}}/pictures/ HTTP/1.1
+GET {{host}}/api/pictures/1d4a1ce4-6b59-4970-b419-5d9b9bbe2beb HTTP/1.1
 Accept: application/json

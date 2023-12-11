@@ -13,32 +13,6 @@ const screenshot = async (currentSlide, screenResolution) => {
         height: 900,
         deviceScaleFactor: 1
     })
-    
-    /*
-    // connect to alphaInnovationPage
-    await page.goto('http://srvfactorytrack.wavnet.be:8080/project/ALPHA%20INNOVATIONS/dashboard/Dashboards_b796601b-c5be-4061-94f6-341012dc9291/view')
-    await page.waitForNetworkIdle()
-
-
-    const url = await page.url()
-    // redirect to login
-    if (url.startsWith('http://srvfactorytrack.wavnet.be:8080/auth/Account/Login'))
-    {
-        await page.type('#Username', MYREPORT_LOGIN)
-        await page.click('body > div > div > div > form > fieldset > button')
-        await page.type('#Password', MYREPORT_PASSWORD)
-        await page.click('body > div > div > div > form > fieldset > button')
-
-        await page.goto('http://srvfactorytrack.wavnet.be:8080/project/ALPHA%20INNOVATIONS/dashboard/Dashboards_b796601b-c5be-4061-94f6-341012dc9291/view')
-        await page.waitForNetworkIdle()
-    } 
-    else if (!url.startsWith('http://srvfactorytrack.wavnet.be:8080/'))
-    {
-        await browser.close()
-        console.log('lost')
-        return ""
-    }
-    */
 
     // login
     await page.goto('http://srvfactorytrack.wavnet.be:8080/auth/Account/Login?ReturnUrl=%2Fauth%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Did_token%2520token%26client_id%3Dcenter_client%26state%3DWWpmcU0wLWtia0JpY2R1MVpEMG5qaEhZdWVyVE1uUmh6NUZiREJRR0pwMElx%26redirect_uri%3Dhttp%253A%252F%252Fsrvfactorytrack.wavnet.be%253A8080%252Findex%26scope%3Dopenid%2520profile%2520email%2520user_license%2520project_read%2520dashboard_read%26nonce%3DWWpmcU0wLWtia0JpY2R1MVpEMG5qaEhZdWVyVE1uUmh6NUZiREJRR0pwMElx')
@@ -52,13 +26,13 @@ const screenshot = async (currentSlide, screenResolution) => {
     await page.click('body > div > div > div > form > fieldset > button')
 
     await page.goto('http://srvfactorytrack.wavnet.be:8080/project/ALPHA%20INNOVATIONS/dashboard/Dashboards_b796601b-c5be-4061-94f6-341012dc9291/view')
-    await page.waitForNetworkIdle()
+
+    await page.waitForSelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul')
 
     // get tabs
     const childrens = await page.evaluate(async () => {
         const names = []
         var elements = await document.querySelector('body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul')
-        console.log(elements)
         for (element of elements.children) {
             var beginIndex = element.innerHTML.indexOf("class=\"ng-tns-c119-0\">")
             var endIndex =  element.innerHTML.indexOf("</span></div></div></div>")
@@ -79,7 +53,6 @@ const screenshot = async (currentSlide, screenResolution) => {
             await page.click(
                 'body > app-root > div > app-navigation > div > app-dashboard-vue > div > div > div > dx-menu > div > ul > li:nth-child(' + y + ') > div')
             await page.waitForNetworkIdle()
-            //await new Promise(r => setTimeout(r, 1000))
             const screenshotBuffer = await page.screenshot({ encoding: 'base64', type:'jpeg', quality:100, fullPage: true });
             
             await browser.close()

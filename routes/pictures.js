@@ -11,9 +11,15 @@ router.get('/:id', async (req, res, next) => {
         .find({ id: id })
         .then(dbSlide => slide = dbSlide)
         .catch(err => next(err))
+    
+    if (slide.length === 0)
+    {
+        res.status(404).json()
+        return
+    }
 
     // screenshot Slides
-    if (slide.domain !== "")
+    if (slide[0].domain !== "")
     {    
         // do new screenshot
         var tempImage = ""
