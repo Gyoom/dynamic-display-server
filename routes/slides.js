@@ -44,7 +44,7 @@ router.get("/todisplay", async (req, res, next) => {
               {   
                   var tempImage = ""
                   try {
-                      tempImage = await domainSelector.select(correctOrderSlides[i], res)
+                      tempImage = await domainSelector.select(correctOrderSlides[i])
                   } catch (error) {
                       res.status(500).json()
                       return

@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer')
 const GRAFANA_LOGIN = process.env.GRAFANA_LOGIN
 const GRAFANA_PASSWORD = process.env.GRAFANA_PASSWORD
 
-const screenshot = async (currentSlide, res) => {
+const screenshot = async (currentSlide) => {
     const browser = await puppeteer.launch({ headless: 'new' })
     const page = await browser.newPage()
 
