@@ -41,6 +41,7 @@ const screenshot = async (currentSlide, screenResolution) => {
 
         return names;
     }).catch(e => {
+        browser.close()
         console.log('error : ', e)
         return
     })
