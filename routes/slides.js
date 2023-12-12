@@ -9,7 +9,11 @@ router.get("/", async (req, res, next) => {
   var rawSlides = []
   await Slide.find({})
   .then(slides => rawSlides = slides)
-  .catch(err => next(err))
+  .catch(e => {
+    console.log('Error : API getAllSlidesWhitoutPicture : get slides from database :\n', e)
+    res.status(500).json()
+    return
+  })
 
   // order correction
   var correctOrderSlides = []
@@ -53,8 +57,8 @@ router.get("/todisplay", async (req, res, next) => {
                     
                   await Slide
                       .updateOne({ id: correctOrderSlides[i].id }, { picture: correctOrderSlides[i].picture})
-                      .catch(err => {
-                        console.log(err)
+                      .catch(e => {
+                        console.log(e)
                         res.status(500).json()
                         return
                   })
