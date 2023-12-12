@@ -52,7 +52,7 @@ const screenshot = async (currentSlide) => {
 
     } catch (e) {
         browser.close()
-        throw new Error('Grafana Puppeteer :\n', e)
+        throw new Error('Grafana Puppeteer :', e.message)
     }
 }
 

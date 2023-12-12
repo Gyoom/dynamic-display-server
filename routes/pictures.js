@@ -32,7 +32,7 @@ router.get('/:id', async (req, res, next) => {
         try {
             tempImage = await domainSelector.select(slides[0])
         } catch (e) {
-            console.log('Error : API getPictureById : screenshot :\n', e)
+            console.log('\n', e, '\n')
             res.status(500).json()
             return
         }

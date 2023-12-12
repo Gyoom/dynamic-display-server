@@ -9,7 +9,6 @@ const screenshot = async (currentSlide, screenResolution) => {
     const page = await browser.newPage()
 
     try {
-    
         await page.setViewport({
             width: 1920,
             height: 900,
@@ -65,7 +64,7 @@ const screenshot = async (currentSlide, screenResolution) => {
 
     } catch (e) {
         browser.close()
-        throw new Error('MyReport Puppeteer :\n', e)
+        throw new Error('MyReport Puppeteer :', e.message)
     }
 }
 
