@@ -65,8 +65,7 @@ const screenshot = async (currentSlide, screenResolution) => {
 
     } catch (e) {
         browser.close()
-        console.log('MyReport Puppeteer :\n', e)
-        return ""
+        throw new Error('MyReport Puppeteer :\n', e)
     }
 }
 
