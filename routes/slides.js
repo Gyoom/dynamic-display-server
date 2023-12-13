@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const Slide = require("../models/slide")
 const domainSelector = require('./screenshotDomain/domainSelector')
-
+initLoad = require('../background/background')
 
 // Find all without picture
 router.get("/", async (req, res, next) => {
@@ -66,6 +66,7 @@ router.get("/todisplay", async (req, res, next) => {
           } 
       } 
   }
+  //initLoad()
   res.status(200).json(correctOrderSlides)
 })
 

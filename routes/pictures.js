@@ -36,7 +36,7 @@ router.get('/:id', async (req, res, next) => {
             res.status(500).json()
             return
         }
-        // check find picture
+        // check found picture
         if (tempImage === "")
         {
             console.log('Error : API getPictureById : screenshot not found')

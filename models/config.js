@@ -6,7 +6,8 @@ const configSchema = new mongoose.Schema({
   displayDelay: Number,
   id: Number,
   transitionDelay: Number,
-  domains : Array
+  domains : Array,
+  lastLoadDate : Date
 
 })
 

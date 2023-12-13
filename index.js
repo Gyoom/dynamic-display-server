@@ -2,6 +2,7 @@ const {MONGODB_URI, PORT} = require('./utils/config')
 const path = require("path");
 const express = require("express")
 const mongoose = require('mongoose')
+require('dotenv').config()
 
 var bodyParser = require("body-parser");
 const middlewares = require('./utils/middlewares')
@@ -9,6 +10,7 @@ const middlewares = require('./utils/middlewares')
 const configRouter = require('./routes/configs')
 const slidesRouter = require('./routes/slides')
 const picturesRouter = require('./routes/pictures')
+initLoad = require('./background/background')
 const buildPath = path.normalize(path.join(__dirname, '/public'))
 
 mongoose.connect(MONGODB_URI)
@@ -25,6 +27,7 @@ app.use(middlewares.logger)
 app.use(middlewares.errorHandler)
 
 
+
 app.use('/api/config', configRouter)
 app.use('/api/slides', slidesRouter)
 app.use('/api/pictures', picturesRouter)
@@ -36,7 +39,9 @@ rootRouter.get('(/*)?', async (req, res, next) => {
 
 app.use(rootRouter)
 
+process.env.TZ = "Europe/Brussels"
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+  initLoad()
 })
