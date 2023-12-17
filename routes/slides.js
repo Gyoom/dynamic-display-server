@@ -1,73 +1,58 @@
 const router = require('express').Router()
 const Slide = require("../models/slide")
-const domainSelector = require('./screenshotDomain/domainSelector')
-initLoad = require('../background/background')
+const Serie = require('../models/serie')
 
 // Find all without picture
 router.get("/", async (req, res, next) => {
   // get data from database
   var rawSlides = []
   await Slide.find({})
-  .then(slides => rawSlides = slides)
-  .catch(e => {
-    console.log('Error : API getAllSlidesWhitoutPicture : get slides from database :\n', e)
-    res.status(500).json()
-    return
-  })
-
-  // order correction
-  var correctOrderSlides = []
-  for (let i = 0; i < rawSlides.length; i++) {
-      for (let y = 0; y < rawSlides.length; y++) {
-          if (rawSlides[y].order === i)
-          {
-            rawSlides[y].picture = ""
-            correctOrderSlides[i] = rawSlides[y]
-          } 
-      } 
+    .then(slides => rawSlides = slides)
+    .catch(err => {
+      console.log('\n' + 'slides --> GET AllWhitoutPicture --> database request :\n', err + '\n')
+      res.status(500).json()
+      return
+    })
+  
+  // remove picture
+  for (let index = 0; index < rawSlides.length; index++) {
+    rawSlides.picture = ''
   }
-  res.status(200).json(correctOrderSlides)
+
+  res.status(200).json(rawSlides)
 })
 
-// Find all
-router.get("/todisplay", async (req, res, next) => {
-  // get data from database
-  var rawSlides = []
-  await Slide.find({})
-  .then(slides => rawSlides = slides)
-  .catch(err => next(err))
+// Find by serie id
+router.get("/serie/:id", async (req, res, next) => {
+  var serieId = req.params.id
+    // get serie from database
+  var serie = {}
+  await Serie.find({ id: serieId })
+    .then(series => serie = series[0])
+    .catch(err => {
+      console.log('\n' + 'slides --> GET by serie id --> database request : ', err + '\n')
+      res.status(500).json()
+      return
+    })
 
-  // order correction
-  var correctOrderSlides = []
-  for (let i = 0; i < rawSlides.length; i++) {
-      for (let y = 0; y < rawSlides.length; y++) {
-          if (rawSlides[y].order === i)
-          {
-              correctOrderSlides[i] = rawSlides[y]
-              if (correctOrderSlides[i].picture === "")
-              {   
-                  var tempImage = ""
-                  try {
-                      tempImage = await domainSelector.select(correctOrderSlides[i])
-                  } catch (error) {
-                      res.status(500).json()
-                      return
-                  }
-                  correctOrderSlides[i].picture = tempImage
-                    
-                  await Slide
-                      .updateOne({ id: correctOrderSlides[i].id }, { picture: correctOrderSlides[i].picture})
-                      .catch(e => {
-                        console.log(e)
-                        res.status(500).json()
-                        return
-                  })
-              }
-          } 
-      } 
+  // get slides serie from database
+  var slides = []
+  for (let i = 0; i < serie.slides.length; i++) {
+    for (let y = 0; y < serie.slides.length; y++) {
+      if (serie.slides[y].order === i)
+      {
+        await Slide.find({ id: serie.slides[y].slideId })
+          .then(dbSlides => slides.push(dbSlides[0]))
+          .catch(err => {
+              console.log('\n' + 'slides --> GET by serie id --> database request : ', err + '\n')
+              res.status(500).json()
+              return
+          })
+        break
+      }
+    }
   }
-  //initLoad()
-  res.status(200).json(correctOrderSlides)
+  res.status(200).json(slides)
 })
 
 // Insert One
@@ -77,58 +62,59 @@ router.post("/", async (req, res, next) => {
   await Slide
     .create({
       id: newSlide.id,
-      order: newSlide.order,
       name: newSlide.name,
       domain: newSlide.domain,
       webpagePathData: newSlide.webpagePathData,
       picture: newSlide.picture
     })
-    .catch(err => next(err))
+    .catch(err => {
+      console.log('\n' + 'slides --> POST One --> database request : ', err + '\n')
+      res.status(500).json()
+      return
+    })
 
   res.status(200).json(newSlide)
 })
 
-// change Order
-router.put("/order", async (req, res, next) => {
-  const newOrder = req.body
+router.delete("/:id", async (req, res, next) => {
+  var id = req.params.id
 
-  var count = 0
+  // delete slide
   await Slide
-    .countDocuments()
-    .then(countDocuments => count = countDocuments)
-    .catch(err => next(err))
-
-  for (let index = 0; index < count; index++) {
-    await Slide
-      .updateMany({ id: newOrder[index].id }, { order: newOrder[index].order})
-      .catch(err => next(err))
-  }
+    .deleteOne({ id:id })
+    .catch(err => {
+      console.log('\n' + 'slides --> DELETE One --> database request --> DELETE Slide : ', err + '\n')
+      res.status(500).json()
+      return
+    })
+    // get series
+    var series = []
+    await Serie
+      .find({})
+      .then(dbSeries => series = dbSeries)
+      .catch(err => {
+        console.log('\n' + 'slides --> DELETE One --> database request --> GET Series : ', err + '\n')
+        res.status(500).json()
+        return
+      })
+    
+    // update series 
+    series.forEach(async (serie) => {
+  
+        var newSlides = serie.slides.filter(slide => slide.id !== id)
+        if (newSlides.length !== serie.slides.length)
+        {
+          await Serie.updateOne({ id: serie.id }, { slides: newSlides})
+          .catch(err => {
+            console.log('\n' + 'slides --> DELETE One --> database request --> GET Series : ', err + '\n')
+            res.status(500).json()
+            return
+          })
+        }
+    })
 
   res.status(200).json()
 })
-
-router.delete("/:order", async (req, res, next) => {
-  var deletedOrder = req.params.order
-
-  await Slide.deleteOne({ order:deletedOrder })
-
-  var count = 0
-  await Slide
-    .countDocuments()
-    .then(countDocuments => count = countDocuments)
-    .catch(err => next(err))
-  
-
-  var initialIndex = +deletedOrder + 1
-  for (let index = initialIndex; index <= count; index++) {
-    await Slide
-      .updateOne({ order: index }, { order: index - 1 })
-      .catch(err => next(err))
-  }
-
-  res.status(200).json()
-  
-});
 
 
 

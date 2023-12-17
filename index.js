@@ -1,16 +1,16 @@
+require('dotenv').config()
 const {MONGODB_URI, PORT} = require('./utils/config')
 const path = require("path");
 const express = require("express")
 const mongoose = require('mongoose')
-require('dotenv').config()
-
+initLoad = require('./background/background')
 var bodyParser = require("body-parser");
 const middlewares = require('./utils/middlewares')
 
 const configRouter = require('./routes/configs')
 const slidesRouter = require('./routes/slides')
-const picturesRouter = require('./routes/pictures')
-initLoad = require('./background/background')
+const seriesRouter = require('./routes/series')
+
 const buildPath = path.normalize(path.join(__dirname, '/public'))
 
 mongoose.connect(MONGODB_URI)
@@ -26,17 +26,13 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }))
 app.use(middlewares.logger)
 app.use(middlewares.errorHandler)
 
-
-
 app.use('/api/config', configRouter)
 app.use('/api/slides', slidesRouter)
-app.use('/api/pictures', picturesRouter)
-
+app.use('/api/series', seriesRouter)
 
 rootRouter.get('(/*)?', async (req, res, next) => {
   res.sendFile(path.join(buildPath, 'index.html'));
 })
-
 app.use(rootRouter)
 
 process.env.TZ = "Europe/Brussels"
