@@ -5,10 +5,11 @@ const Serie = require('../models/serie')
 router.get("/", async (req, res, next) => {
   // get data from database
   var series = []
-  await Serie.find({})
+  await Serie
+    .find({})
     .then(dbSeries => series = dbSeries)
-    .catch(e => {
-        console.log('Error : API getAllSeries : db request :\n', e)
+    .catch(err => {
+        console.log('\n', 'Error / series / GET All/ db request :', err, '\n')
         res.status(500).json()
         return
     })
@@ -21,10 +22,11 @@ router.get("/:id", async (req, res, next) => {
   var id = req.params.id
   // get data from database
   var serie = {}
-  await Serie.find({ id:id })
+  await Serie
+    .find({ id:id })
     .then(dbSeries => serie = dbSeries[0])
-    .catch(e => {
-        console.log('API getOneById : db request :\n', e)
+    .catch(err => {
+        console.log('\n', 'Error / series / GET one by Id / db request :', err, '\n')
         res.status(500).json()
         return
     })
@@ -42,7 +44,11 @@ router.post("/", async (req, res, next) => {
       name: newSerie.name,
       slides: newSerie.slides
     })
-    .catch(err => next(err))
+    .catch(err =>  {
+      console.log('\n', 'Error / series / POST one / db request :', err, '\n')
+      res.status(500).json()
+      return
+    })
 
   res.status(200).json(newSerie)
 })
@@ -51,7 +57,13 @@ router.post("/", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   var id = req.params.id
 
-  await Serie.deleteOne({ id:id })
+  await Serie
+    .deleteOne({ id:id })
+    .catch(err =>  {
+      console.log('\n', 'Error / series / DELETE one / db request :', err, '\n')
+      res.status(500).json()
+      return
+    })
 
   res.status(200).json()
   
@@ -63,21 +75,23 @@ router.put("/addSlides/:id", async (req, res, next) => {
   var newSlide = req.body
 
   var serie = {}
-  await Serie.find({ id:id })
+  await Serie
+    .find({ id:id })
     .then(dbSeries => serie = dbSeries[0])
-    .catch(err => {
-        console.log('\n', 'PUT AddSlide : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+    .catch(err =>  {
+      console.log('\n', 'Error / series / UPDATE add one slide / db request get :', err, '\n')
+      res.status(500).json()
+      return
     })
 
   var newSlides = [...serie.slides, newSlide]
 
-  await Serie.updateOne({ id:id }, { slides: newSlides})
-    .catch(err => {
-        console.log('\n', 'PUT AddSlide : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+  await Serie
+    .updateOne({ id:id }, { slides: newSlides})
+    .catch(err =>  {
+      console.log('\n', 'Error / series / UPDATE add one slide / db request update :', err, '\n')
+      res.status(500).json()
+      return
     })
 
   res.status(200).json()
@@ -89,17 +103,20 @@ router.put("/removeSlides/:id", async (req, res, next) => {
   var serieId = req.params.id
   var body = req.body
   var serie = {}
-  await Serie.find({ id:serieId })
+  await Serie
+    .find({ id:serieId })
     .then(dbSeries => serie = dbSeries[0])
-    .catch(err => {
-        console.log('\n', 'PUT removeSlide : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+    .catch(err =>  {
+      console.log('\n', 'Error / series / UPDATE remove one slide / db request get :', err, '\n')
+      res.status(500).json()
+      return
     })
+
   var newSlides = serie.slides.filter(s => s.id !== body.serieSlideId)
-  await Serie.updateMany({ id: serieId }, { slides: newSlides })
+  await Serie
+    .updateMany({ id: serieId }, { slides: newSlides })
     .catch(err => {
-        console.log('\n', 'PUT removeSlide : db request :\n', err, '\n')
+        console.log('\n', 'Error / series / UPDATE remove one slide / db request update :', err, '\n')
         res.status(500).json()
         return
     })
@@ -115,12 +132,13 @@ router.put("/updateOrder/:id", async (req, res, next) => {
   
   // get serie to update
   var serie = {}
-  await Serie.find({ id:serieId })
+  await Serie
+    .find({ id:serieId })
     .then(dbSeries => serie = dbSeries[0])
     .catch(err => {
-        console.log('\n', 'PUT removeSlide : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+      console.log('\n', 'Error / series / UPDATE order / db request get :', err, '\n')
+      res.status(500).json()
+      return
     })
   
   // change order values
@@ -129,11 +147,12 @@ router.put("/updateOrder/:id", async (req, res, next) => {
   }
 
   // update serie in db
-  await Serie.updateMany({ id: serieId }, { slides: serie.slides })
+  await Serie
+    .updateMany({ id: serieId }, { slides: serie.slides })
     .catch(err => {
-        console.log('\n', 'PUT removeSlide : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+      console.log('\n', 'Error / series / UPDATE order / db request update :', err, '\n')
+      res.status(500).json()
+      return
     })
 
   res.status(200).json()
@@ -145,16 +164,17 @@ router.put("/updateParams/:id", async (req, res, next) => {
   var serieId = req.params.id
   var body = req.body
   
-  await Serie.updateMany({ id: serieId }, { 
+  await Serie
+    .updateMany({ id: serieId }, { 
       name: body.name,
       reloadDelay: body.reloadDelay, 
       displayDelay: body.displayDelay,
       transitionDelay: body.transitionDelay
     })
     .catch(err => {
-        console.log('\n', 'PUT params : db request :\n', err, '\n')
-        res.status(500).json()
-        return
+      console.log('\n', 'Error / series / UPDATE params / db request update :', err, '\n')
+      res.status(500).json()
+      return
     })
 
   res.status(200).json()

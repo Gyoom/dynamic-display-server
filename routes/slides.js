@@ -6,10 +6,11 @@ const Serie = require('../models/serie')
 router.get("/", async (req, res, next) => {
   // get data from database
   var rawSlides = []
-  await Slide.find({})
+  await Slide
+    .find({})
     .then(slides => rawSlides = slides)
     .catch(err => {
-      console.log('\n' + 'slides --> GET AllWhitoutPicture --> database request :\n', err + '\n')
+      console.log('\n' + 'Error / slides / GET All without picture / database request get :', err + '\n')
       res.status(500).json()
       return
     })
@@ -27,10 +28,11 @@ router.get("/serie/:id", async (req, res, next) => {
   var serieId = req.params.id
     // get serie from database
   var serie = {}
-  await Serie.find({ id: serieId })
+  await Serie
+    .find({ id: serieId })
     .then(series => serie = series[0])
     .catch(err => {
-      console.log('\n' + 'slides --> GET by serie id --> database request : ', err + '\n')
+      console.log('\n' + 'Error / slides / GET one by serie id / database request get serie : ', err + '\n')
       res.status(500).json()
       return
     })
@@ -44,7 +46,7 @@ router.get("/serie/:id", async (req, res, next) => {
         await Slide.find({ id: serie.slides[y].slideId })
           .then(dbSlides => slides.push(dbSlides[0]))
           .catch(err => {
-              console.log('\n' + 'slides --> GET by serie id --> database request : ', err + '\n')
+              console.log('\n' + 'Error / slides / GET by one serie id / database request get slides : ', err + '\n')
               res.status(500).json()
               return
           })
@@ -68,7 +70,7 @@ router.post("/", async (req, res, next) => {
       picture: newSlide.picture
     })
     .catch(err => {
-      console.log('\n' + 'slides --> POST One --> database request : ', err + '\n')
+      console.log('\n' + 'Error / slides / POST One / database request post : ', err + '\n')
       res.status(500).json()
       return
     })
@@ -76,6 +78,7 @@ router.post("/", async (req, res, next) => {
   res.status(200).json(newSlide)
 })
 
+// delete one
 router.delete("/:id", async (req, res, next) => {
   var id = req.params.id
 
@@ -83,7 +86,7 @@ router.delete("/:id", async (req, res, next) => {
   await Slide
     .deleteOne({ id:id })
     .catch(err => {
-      console.log('\n' + 'slides --> DELETE One --> database request --> DELETE Slide : ', err + '\n')
+      console.log('\n' + 'Error / slides / DELETE One / database request delete : ', err + '\n')
       res.status(500).json()
       return
     })
@@ -93,7 +96,7 @@ router.delete("/:id", async (req, res, next) => {
       .find({})
       .then(dbSeries => series = dbSeries)
       .catch(err => {
-        console.log('\n' + 'slides --> DELETE One --> database request --> GET Series : ', err + '\n')
+        console.log('\n' + 'Error / slides / DELETE One / database request get series : ', err + '\n')
         res.status(500).json()
         return
       })
@@ -104,9 +107,10 @@ router.delete("/:id", async (req, res, next) => {
         var newSlides = serie.slides.filter(slide => slide.id !== id)
         if (newSlides.length !== serie.slides.length)
         {
-          await Serie.updateOne({ id: serie.id }, { slides: newSlides})
+          await Serie
+          .updateOne({ id: serie.id }, { slides: newSlides })
           .catch(err => {
-            console.log('\n' + 'slides --> DELETE One --> database request --> GET Series : ', err + '\n')
+            console.log('\n' + 'Error / slides / DELETE One / database request update serie : ', err + '\n')
             res.status(500).json()
             return
           })

@@ -50,9 +50,9 @@ const screenshot = async (currentSlide) => {
 
         return "data:image/jpg;base64, " + screenshotBuffer
 
-    } catch (e) {
+    } catch (err) {
         browser.close()
-        throw new Error('Grafana Puppeteer :', e.message)
+        throw new Error('Grafana Puppeteer : ' + err)
     }
 }
 
