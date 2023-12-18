@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 // Define Schema
 const SerieSchema = new mongoose.Schema({
-  id: String,
+  id: Number,
   name: String,
   slides: Array,
   reloadDelay: Number,
